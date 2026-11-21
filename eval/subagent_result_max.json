@@ -1,0 +1,25 @@
+{
+ "ts": "2026-11-20T18:35:00+0530",
+ "provider": "opencode/deepseek-v4.1-flash-free#max via subagents",
+ "variant": "max",
+ "n": 6,
+ "baseline": [
+  0.0,
+  0.0,
+  0.0,
+  0.5,
+  0.5,
+  0.0
+ ],
+ "taught": [
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  1.0
+ ],
+ "mean_base": 0.166667,
+ "mean_taught": 1.0,
+ "note": "Max reasoning-effort variant. Same seed and same 6 facts as the default-variant run. Baseline is higher because Max knows 1865 from pretraining; taught is exact 6/6."
+}

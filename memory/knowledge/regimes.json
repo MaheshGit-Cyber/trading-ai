@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "Operational regime definitions. 'Trend' must be a measurable state, not an opinion. Every threshold here is computed from data, never assigned by the model.",
+  "computed_by": "engine/features (deterministic code). The LLM may read the label; it may not invent it.",
+  "regimes": [
+    {
+      "id": "trend_up",
+      "label": "Uptrend",
+      "criteria": {
+        "all_of": [
+          "close > 200DMA",
+          "50DMA > 200DMA",
+          "ADX(14) >= 20",
+          "slope of 50DMA over 20 sessions > 0"
+        ]
+      },
+      "tradeable_setups": ["trend_pullback", "base_breakout", "rs_leader_pullback"],
+      "avoid": [],
+      "note": "Buying strength in an uptrend is the whole point. Fading strength here is the mistake."
+    },
+    {
+      "id": "trend_down",
+      "label": "Downtrend",
+      "criteria": {
+        "all_of": [
+          "close < 200DMA",
+          "50DMA < 200DMA",
+          "ADX(14) >= 20",
+          "slope of 50DMA over 20 sessions < 0"
+        ]
+      },
+      "tradeable_setups": [],
+      "avoid": ["trend_pullback", "base_breakout", "rs_leader_pullback"],
+      "note": "Long-only system: no setups in trend_down. Short selling is out of scope for Phase 1."
+    },
+    {
+      "id": "range",
+      "label": "Range / Chop",
+      "criteria": {
+        "any_of": [
+          "ADX(14) < 20",
+          "close within 2% of 200DMA for 10+ sessions",
+          "ATR(14) below its 40th percentile over 60 sessions"
+        ]
+      },
+      "tradeable_setups": ["range_breakout"],
+      "avoid": ["trend_pullback", "rs_leader_pullback"],
+      "note": "Most indicators fail here. The regime label exists mainly to STOP trend setups from firing."
+    },
+    {
+      "id": "transition",
+      "label": "Transition / Unclear",
+      "criteria": {
+        "any_of": [
+          "ADX(14) between 18 and 22",
+          "50DMA crossed 200DMA within the last 10 sessions",
+          "ATR(14) above its 90th percentile (volatility shock)"
+        ]
+      },
+      "tradeable_setups": ["range_breakout"],
+      "avoid": ["trend_pullback", "base_breakout", "rs_leader_pullback"],
+      "note": "A volatility shock is not a trend. Treat as transition until the shock resolves."
+    },
+    {
+      "id": "unknown",
+      "label": "Unknown / Insufficient Data",
+      "criteria": {
+        "any_of": [
+          "fewer than 200 daily bars available",
+          "data gap larger than 5 sessions in the last 60",
+          "benchmark series missing"
+        ]
+      },
+      "tradeable_setups": [],
+      "avoid": ["all"],
+      "note": "No trade is a valid output. This label must never be silently upgraded to a tradeable regime."
+    }
+  ],
+  "market_wide_filter": {
+    "id": "index_risk_off",
+    "criteria": {
+      "any_of": [
+        "Nifty close < 200DMA",
+        "Nifty drawdown from 20-day high > 8%",
+        "India VIX > 25"
+      ]
+    },
+    "effect": "Halve position size. Do not disable signals -- a filter that turns signals off during stress also removes the recovery trades."
+  }
+}

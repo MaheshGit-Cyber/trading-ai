@@ -1,0 +1,31 @@
+{
+  "ts": "2026-11-22T02:25:06+0530",
+  "provider": "opencode_cli",
+  "n": 2,
+  "seed": 20261120,
+  "mean_base": 0.0,
+  "mean_taught": 0.0,
+  "delta": 0.0,
+  "hit_base": 0.0,
+  "hit_taught": 0.0,
+  "items": [
+    {
+      "i": 1,
+      "section": "7.1 The 2020 COVID-19 crash",
+      "label": "Impact",
+      "answer": "S&P −34% in 33 days (bottom 2,237 on 23 March 2020); Sensex −38%",
+      "src": "13-market-news-history/WORLD-TIMELINE.md",
+      "base": 0.0,
+      "taught": 0.0
+    },
+    {
+      "i": 2,
+      "section": "4.6 The 2008 global financial crisis",
+      "label": "Recovery",
+      "answer": "Sensex regained 21,000 in January 2014 (~6 years)",
+      "src": "13-market-news-history/INDIA-TIMELINE.md",
+      "base": 0.0,
+      "taught": 0.0
+    }
+  ]
+}

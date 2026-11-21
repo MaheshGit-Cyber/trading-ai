@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "Real cost model. A backtest without these numbers is fiction.",
+  "verify_note": "Rates change. Re-verify against your broker's contract note and the exchange circular before trusting a backtest. Rates below reflect Budget 2026 (STT on F&O effective 1 April 2026) plus standard NSE charges.",
+  "assumptions": {
+    "broker": "discount broker, flat-fee model",
+    "brokerage_delivery": 0.0,
+    "brokerage_intraday_flat": 20.0,
+    "brokerage_intraday_pct": 0.0003,
+    "brokerage_intraday_rule": "min(flat, pct * turnover)",
+    "gst_rate": 0.18,
+    "gst_applies_to": ["brokerage", "exchange_txn", "sebi_fee"],
+    "note": "GST is NOT charged on STT or stamp duty."
+  },
+  "segments": {
+    "equity_delivery": {
+      "stt_buy_pct": 0.001,
+      "stt_sell_pct": 0.001,
+      "exchange_txn_pct": 0.0000297,
+      "sebi_fee_pct": 0.000001,
+      "stamp_duty_buy_pct": 0.00015,
+      "stamp_duty_sell_pct": 0.0,
+      "dp_charge_sell": 13.5,
+      "dp_charge_note": "Depository participant charge per sell scrip per day, approx. Verify with broker."
+    },
+    "equity_intraday": {
+      "stt_buy_pct": 0.0,
+      "stt_sell_pct": 0.00025,
+      "exchange_txn_pct": 0.0000297,
+      "sebi_fee_pct": 0.000001,
+      "stamp_duty_buy_pct": 0.00003,
+      "stamp_duty_sell_pct": 0.0
+    },
+    "equity_futures": {
+      "stt_buy_pct": 0.0,
+      "stt_sell_pct": 0.0005,
+      "stt_note": "Raised from 0.02% to 0.05% in Budget 2026, effective 1 April 2026.",
+      "exchange_txn_pct": 0.0000173,
+      "sebi_fee_pct": 0.000001,
+      "stamp_duty_buy_pct": 0.00002,
+      "stamp_duty_sell_pct": 0.0
+    },
+    "equity_options": {
+      "stt_buy_pct": 0.0,
+      "stt_sell_pct": 0.0015,
+      "stt_note": "Raised from 0.10% to 0.15% on premium in Budget 2026, effective 1 April 2026. Exercise STT also 0.15%.",
+      "exchange_txn_pct": 0.0003503,
+      "sebi_fee_pct": 0.000001,
+      "stamp_duty_buy_pct": 0.00003,
+      "stamp_duty_sell_pct": 0.0
+    }
+  },
+  "worked_examples": {
+    "basis": "Rs 1,00,000 round-trip turnover, one buy and one sell of equal value",
+    "equity_delivery": {
+      "brokerage": 0.0,
+      "stt": 200.0,
+      "stamp_duty": 15.0,
+      "exchange_txn": 5.94,
+      "sebi_fee": 0.2,
+      "gst": 1.11,
+      "dp_charge": 13.5,
+      "total": 235.75,
+      "bps": 23.58
+    },
+    "equity_intraday": {
+      "brokerage": 40.0,
+      "stt": 25.0,
+      "stamp_duty": 3.0,
+      "exchange_txn": 5.94,
+      "sebi_fee": 0.2,
+      "gst": 8.31,
+      "total": 82.45,
+      "bps": 8.25
+    },
+    "equity_futures": {
+      "brokerage": 40.0,
+      "stt": 50.0,
+      "stamp_duty": 2.0,
+      "exchange_txn": 3.46,
+      "sebi_fee": 0.2,
+      "gst": 7.86,
+      "total": 103.52,
+      "bps": 10.35
+    },
+    "equity_options": {
+      "brokerage": 40.0,
+      "stt": 150.0,
+      "stamp_duty": 3.0,
+      "exchange_txn": 70.06,
+      "sebi_fee": 0.2,
+      "gst": 19.85,
+      "total": 283.11,
+      "bps": 28.31
+    }
+  },
+  "slippage": {
+    "note": "Costs above are taxes and fees. Slippage is separate and usually larger.",
+    "model": {
+      "largecap_lt_1cr_adv": 0.0010,
+      "midcap_1_to_10cr_adv": 0.0025,
+      "smallcap_gt_10cr_adv": 0.0050,
+      "unit": "fraction of price, one way"
+    },
+    "rule": "Double the modelled slippage and re-run the backtest. If expectancy goes negative, the edge was never real."
+  },
+  "breakeven": {
+    "formula": "total_cost_bps / 10000 must be exceeded by the average gross move",
+    "equity_intraday_example": "8.46 bps round trip means a 0.085% move just breaks even before slippage. Add 10 bps slippage and the bar is ~0.19%.",
+    "implication": "High-frequency daily trading at ~30 round trips a month pays roughly 3% of capital per year in costs alone."
+  }
+}

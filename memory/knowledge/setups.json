@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "Machine-readable setup specifications. Prose is not executable; these are.",
+  "global_rules": {
+    "min_rr": 2.0,
+    "min_rr_is_absolute": true,
+    "min_rr_note": "This floor has no per-setup exceptions. A mean-reversion setup needs a 1.5R target to be mean reversion at all, so it cannot clear this bar and is deliberately excluded. Weakening the floor for one setup weakens it for all of them.",
+    "max_risk_per_trade_pct": 2.0,
+    "require_regime_match": true,
+    "require_confirmation": true,
+    "no_trade_if": [
+      "stock in F&O ban list",
+      "earnings within horizon_days",
+      "circuit limit hit in last 3 sessions",
+      "data older than 1 trading session",
+      "spread > 0.5% of price"
+    ]
+  },
+  "setups": [
+    {
+      "id": "trend_pullback",
+      "name": "Trend Pullback Continuation",
+      "style": "swing",
+      "timeframe": "daily",
+      "horizon_days": 10,
+      "regime_required": ["trend_up"],
+      "entry": "Close above prior day high after a 3-8 session pullback that holds above the 20DMA and does not close below the 50DMA.",
+      "stop": "Below the pullback low, or 1.5 x ATR(14) below entry, whichever is closer.",
+      "target": "Prior swing high; if already exceeded, 2.5 x initial risk.",
+      "invalidation": "Daily close below the 50DMA, or the pullback low is broken before entry.",
+      "confirmation": [
+        "pullback volume below 20D average",
+        "breakout volume above 1.3 x 20D average",
+        "RSI(14) between 40 and 65 at the pullback low"
+      ],
+      "min_rr": 2.0,
+      "notes": "This is the highest-expectancy setup for daily data. It fails in choppy ranges, which is why regime_required is enforced."
+    },
+    {
+      "id": "range_breakout",
+      "name": "Range Breakout with Volume",
+      "style": "swing",
+      "timeframe": "daily",
+      "horizon_days": 10,
+      "regime_required": ["range", "transition"],
+      "entry": "Daily close above the top of a range that has held for at least 15 sessions.",
+      "stop": "Below the range midpoint, or 2 x ATR(14) below entry.",
+      "target": "Range height projected from the breakout point.",
+      "invalidation": "Close back inside the range within 3 sessions (failed breakout).",
+      "confirmation": [
+        "volume >= 1.5 x 20D average on the breakout day",
+        "range width between 4% and 15% of price",
+        "no more than 3 touches of the range top before the break"
+      ],
+      "min_rr": 2.0,
+      "notes": "Most breakouts fail. The 3-session re-entry rule is the filter; without it this setup has negative expectancy."
+    },
+    {
+      "id": "base_breakout",
+      "name": "Volatility Contraction Base Breakout",
+      "style": "positional",
+      "timeframe": "daily",
+      "horizon_days": 20,
+      "regime_required": ["trend_up", "transition"],
+      "entry": "Close above the pivot of a base where ATR has contracted for at least 3 consecutive weeks.",
+      "stop": "Below the base low, or 7% below entry, whichever is closer.",
+      "target": "2.5 x initial risk, trailed after +1R.",
+      "invalidation": "Base low broken, or ATR expands without a price breakout.",
+      "confirmation": [
+        "ATR(14) at a 3-month low before the breakout",
+        "volume dry-up in the final third of the base",
+        "breakout volume above 1.5 x 20D average"
+      ],
+      "min_rr": 2.5,
+      "notes": "Needs a longer horizon than trend_pullback. Do not apply this on a 5-day horizon."
+    },
+    {
+      "id": "rs_leader_pullback",
+      "name": "Relative Strength Leader Pullback",
+      "style": "positional",
+      "timeframe": "daily",
+      "horizon_days": 20,
+      "regime_required": ["trend_up"],
+      "entry": "Stock in the top decile of 3-month relative strength vs Nifty, pulling back to the 20DMA and closing above it.",
+      "stop": "Below the 50DMA, or 2 x ATR(14) below entry.",
+      "target": "2.5 x initial risk, trailed.",
+      "invalidation": "Relative strength rank drops below the 50th percentile, or the 50DMA breaks.",
+      "confirmation": [
+        "3-month RS rank >= 90th percentile",
+        "pullback volume below average",
+        "market regime is trend_up, not range"
+      ],
+      "min_rr": 2.5,
+      "notes": "Requires a benchmark series (Nifty) aligned on the same calendar. Without it, do not emit this setup."
+    }
+  ]
+}

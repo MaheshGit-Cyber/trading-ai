@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "Failure modes per setup. This is the fuel for the mandatory Devil's Advocate field. A signal without a stated failure mode is an advertisement, not an analysis.",
+  "rule": "Prompt-level requirement: name at least one failure mode from this list for the setup being scored. The deterministic gate enforces presence, a 20-character minimum, and rejects literal generic cop-outs ('markets can go down'). It cannot verify list membership without a setup id, so treat membership as a review/eval check, not a gate guarantee.",
+  "by_setup": {
+    "trend_pullback": [
+      {
+        "mode": "Trend exhaustion",
+        "signs": ["ADX falling while price rises", "3+ distribution days in 10 sessions", "volume rising on down days"],
+        "consequence": "Pullback becomes a reversal. The 50DMA break is the last exit."
+      },
+      {
+        "mode": "Late-stage entry",
+        "signs": ["price more than 15% above 50DMA", "5th or later pullback in the same leg"],
+        "consequence": "Stop is far below, so position size shrinks and the trade is not worth the risk."
+      },
+      {
+        "mode": "False pullback low",
+        "signs": ["pullback low formed on a gap down", "support was never tested before"],
+        "consequence": "Stop sits at an untested level and gets swept."
+      }
+    ],
+    "range_breakout": [
+      {
+        "mode": "False breakout (most common)",
+        "signs": ["breakout volume below 1.3x average", "4th+ touch of the range top", "breakout on a gap, not on a close"],
+        "consequence": "Price re-enters the range within 3 sessions. This is the base rate, not the exception."
+      },
+      {
+        "mode": "News-driven spike",
+        "signs": ["single-day volume above 4x average", "no prior base building"],
+        "consequence": "Volume was a one-off event, not accumulation. The move mean-reverts."
+      },
+      {
+        "mode": "Range top is also major resistance",
+        "signs": ["range top coincides with 200DMA or a prior all-time high"],
+        "consequence": "Two resistance layers stack; breakout needs disproportionate volume."
+      }
+    ],
+    "base_breakout": [
+      {
+        "mode": "Wide and loose base",
+        "signs": ["base depth > 35%", "ATR contraction inconsistent"],
+        "consequence": "Not a real contraction. Supply was never absorbed."
+      },
+      {
+        "mode": "Breakout into overhead supply",
+        "signs": ["prior failed base 10-20% above", "heavy volume-by-price node above"],
+        "consequence": "Buyers from the failed base sell into strength."
+      },
+      {
+        "mode": "Earnings inside the horizon",
+        "signs": ["results date within horizon_days"],
+        "consequence": "Binary event. The technical stop does not protect against a gap."
+      }
+    ],
+    "rs_leader_pullback": [
+      {
+        "mode": "Market regime flip",
+        "signs": ["Nifty breaks its 50DMA", "breadth deteriorating while the leader holds"],
+        "consequence": "Leaders fall last and hardest in a market top."
+      },
+      {
+        "mode": "Crowded leadership",
+        "signs": ["sector-wide extension", "multiple leaders at 15%+ above 50DMA"],
+        "consequence": "The pullback is the exit liquidity for earlier buyers."
+      },
+      {
+        "mode": "Relative strength is stale",
+        "signs": ["RS rank computed on unadjusted prices across a split", "benchmark calendar misaligned"],
+        "consequence": "The rank is an artefact of bad data, not real outperformance."
+      }
+    ]
+  },
+  "universal_failures": [
+    {
+      "mode": "Survivorship bias",
+      "signs": ["universe built from today's index members only"],
+      "consequence": "Backtest returns are inflated because delisted losers are missing."
+    },
+    {
+      "mode": "Look-ahead",
+      "signs": ["signal uses the same close it trades on", "features computed on the full series then split"],
+      "consequence": "The backtest is reading the future. Expectancy will collapse live."
+    },
+    {
+      "mode": "Corporate action contamination",
+      "signs": ["adj_factor not applied", "unadjusted series stitched across a split"],
+      "consequence": "A 1:10 split appears as a -90% crash and corrupts every indicator."
+    },
+    {
+      "mode": "Liquidity illusion",
+      "signs": ["position size > 0.5% of 20-day average volume", "smallcap with wide spreads"],
+      "consequence": "The backtest fill price does not exist at your size."
+    },
+    {
+      "mode": "Regime blind spot",
+      "signs": ["one setup tested across all regimes without separation"],
+      "consequence": "A setup that works only in trend_up shows mediocre aggregate results and gets discarded incorrectly."
+    }
+  ]
+}

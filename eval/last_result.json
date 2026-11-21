@@ -1,0 +1,102 @@
+{
+  "ts": "2026-11-20T16:02:18+0530",
+  "provider": "opencode_cli",
+  "n_terms": 18,
+  "mean_recall_base": 0.8758,
+  "mean_recall_taught": 1.0,
+  "delta": 0.1242,
+  "hit_base": 0.9444,
+  "hit_taught": 1.0,
+  "per_term": [
+    {
+      "term": "ADR/GDR",
+      "base": 0.75,
+      "taught": 1.0
+    },
+    {
+      "term": "Basis",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "CASA",
+      "base": 0.75,
+      "taught": 1.0
+    },
+    {
+      "term": "Collar",
+      "base": 0.8,
+      "taught": 1.0
+    },
+    {
+      "term": "Derivative",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "Event trading",
+      "base": 0.7143,
+      "taught": 1.0
+    },
+    {
+      "term": "Fibonacci retracement",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "HV",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "IV crush",
+      "base": 0.75,
+      "taught": 1.0
+    },
+    {
+      "term": "LTP",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "Market cap",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "NRML",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "PCR",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "Pullback",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "Roll",
+      "base": 0.4,
+      "taught": 1.0
+    },
+    {
+      "term": "Scalping",
+      "base": 0.6,
+      "taught": 1.0
+    },
+    {
+      "term": "Swing trading",
+      "base": 1.0,
+      "taught": 1.0
+    },
+    {
+      "term": "Underlying",
+      "base": 1.0,
+      "taught": 1.0
+    }
+  ]
+}

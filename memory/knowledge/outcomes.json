@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "How to label an outcome. Without this, 'win rate' is a number with no definition and learning cannot be measured.",
+  "r_multiple": {
+    "formula": "R = (exit_price - entry_price) / (entry_price - stop_price) for longs; sign-flipped for shorts",
+    "meaning": "Profit or loss expressed in units of initial risk. A 2R win means the trade made twice what was risked.",
+    "why": "Percent returns are not comparable across trades with different stop distances. R is."
+  },
+  "horizon": {
+    "rule": "Every signal must declare horizon_days at emission time. It cannot be changed later.",
+    "exit_at_horizon": "If neither stop nor target is hit by the horizon close, exit at that close and label time_exit."
+  },
+  "verdicts": [
+    {
+      "verdict": "win",
+      "condition": "r_multiple >= 1.0",
+      "note": "A win is not 'price went up'. It is 'the trade made at least 1R'."
+    },
+    {
+      "verdict": "loss",
+      "condition": "r_multiple <= -1.0",
+      "note": "A full stop-out. A partial stop that exits at -0.6R is a scratch, not a loss."
+    },
+    {
+      "verdict": "scratch",
+      "condition": "-1.0 < r_multiple < 1.0",
+      "note": "Neither target nor full stop reached. Including these as wins inflates hit rate and hides a broken edge."
+    }
+  ],
+  "excursions": {
+    "MFE": {
+      "name": "Maximum Favourable Excursion",
+      "formula": "max favourable price move during the hold, in R units",
+      "use": "Tells you whether the target was too far. If MFE is consistently 1.2R but the target is 2.5R, the target is wrong."
+    },
+    "MAE": {
+      "name": "Maximum Adverse Excursion",
+      "formula": "max adverse price move during the hold, in R units",
+      "use": "Tells you whether the stop is too tight. If MAE regularly reaches -0.9R before the trade works, the stop will be hit by noise."
+    }
+  },
+  "ambiguity_rules": [
+    {
+      "case": "Both stop and target touched on the same daily bar",
+      "rule": "Assume the STOP was hit first. Daily OHLC cannot tell you the order.",
+      "why": "Optimistic assumption here manufactures fake edge. Pessimistic is the only honest default."
+    },
+    {
+      "case": "Gap through the stop",
+      "rule": "Fill at the open, not at the stop price. R can be worse than -1.0.",
+      "why": "Slippage on gaps is real. Ignoring it understates losses."
+    },
+    {
+      "case": "Gap through the target",
+      "rule": "Fill at the open, not at the target price. R can be better than planned.",
+      "why": "Symmetric treatment. Do not take the good side only."
+    },
+    {
+      "case": "Corporate action during the hold",
+      "rule": "Adjust both entry and exit by adj_factor. Never compare unadjusted prices across an action.",
+      "why": "A split looks like a -50% crash if unadjusted. That is fake data."
+    },
+    {
+      "case": "Stock hits circuit limit on exit day",
+      "rule": "Mark as unexit_at_limit and exclude from expectancy until a fill is possible.",
+      "why": "A paper profit you cannot exit is not a profit."
+    }
+  ],
+  "aggregation": {
+    "expectancy": "mean(r_multiple) over closed trades",
+    "expectancy_floor": 0.0,
+    "min_sample": 100,
+    "report_alongside": ["win_rate", "avg_win_R", "avg_loss_R", "max_drawdown_R", "profit_factor"],
+    "warning": "A positive expectancy on fewer than 100 trades is not evidence. It is a small sample."
+  }
+}

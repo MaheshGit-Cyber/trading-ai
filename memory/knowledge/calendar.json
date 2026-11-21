@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "When NOT to trade. A calendar filter removes more bad trades than any indicator adds good ones.",
+  "principle": "Most signal damage comes from trading into known binary events with a technical stop that cannot protect against a gap.",
+  "hard_blocks": [
+    {
+      "id": "earnings_in_horizon",
+      "condition": "Results date falls within horizon_days of the signal date",
+      "action": "No signal.",
+      "why": "A technical stop does not protect against a 15% earnings gap. The risk model assumes continuous prices; earnings break that assumption."
+    },
+    {
+      "id": "fno_ban",
+      "condition": "Underlying is in the F&O ban list",
+      "action": "No derivative signal.",
+      "why": "Fresh positions are prohibited. A signal that cannot be acted on is noise."
+    },
+    {
+      "id": "circuit_recent",
+      "condition": "Stock hit a circuit limit in the last 3 sessions",
+      "action": "No signal.",
+      "why": "Price discovery is broken. Indicators computed on circuit-locked prices are meaningless."
+    },
+    {
+      "id": "data_stale",
+      "condition": "Latest bar is older than 1 trading session",
+      "action": "No signal.",
+      "why": "A stale signal displayed as live is the most dangerous output this system can produce."
+    },
+    {
+      "id": "corporate_action_pending",
+      "condition": "Ex-date for split, bonus, or rights falls within horizon_days",
+      "action": "No signal.",
+      "why": "The price adjusts mechanically. Any target or stop computed on the pre-action basis is wrong."
+    }
+  ],
+  "soft_blocks": [
+    {
+      "id": "rbi_policy",
+      "condition": "RBI monetary policy decision within 2 sessions",
+      "action": "Halve position size.",
+      "why": "Rate-sensitive sectors gap on the decision. Direction is not predictable from technicals."
+    },
+    {
+      "id": "union_budget",
+      "condition": "Union Budget within 5 sessions",
+      "action": "Halve position size, avoid sector-specific bets.",
+      "why": "Tax and duty changes reprice whole sectors overnight."
+    },
+    {
+      "id": "monthly_expiry",
+      "condition": "Monthly F&O expiry within 2 sessions",
+      "action": "Avoid new derivative positions.",
+      "why": "Gamma and roll flows distort intraday price action."
+    },
+    {
+      "id": "results_season",
+      "condition": "Peak results season (mid-Jan, mid-Apr, mid-Jul, mid-Oct)",
+      "action": "Prefer setups with no results date in horizon; reduce size on the rest.",
+      "why": "Idiosyncratic gap risk is elevated across the whole market."
+    },
+    {
+      "id": "long_weekend",
+      "condition": "Market closed for 3+ consecutive days",
+      "action": "Avoid new swing entries in the last session before the break.",
+      "why": "Overnight gap risk multiplies with the number of closed sessions."
+    }
+  ],
+  "never_trade_windows": [
+    {
+      "id": "first_15_minutes",
+      "window": "09:15-09:30 IST",
+      "why": "Opening auction residue and overnight order imbalance. Spreads are widest."
+    },
+    {
+      "id": "last_15_minutes",
+      "window": "15:15-15:30 IST",
+      "why": "Closing auction influence and position squaring. Intraday signals here are noise."
+    }
+  ],
+  "holiday_rule": "Use the exchange holiday calendar, not a weekday check. NSE has trading holidays that fall on weekdays, and muhurat sessions that fall on weekends.",
+  "data_source": "Corporate actions and results dates must be ingested from the exchange feed, not inferred. If the calendar is missing, treat the calendar filter as unknown and do not emit a signal."
+}

@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "updated": "2026-11-20",
+  "role": "Evidence analyst for a signal-only system. You reason over structured data. You never predict a price and you never instruct a buy or sell.",
+  "min_rr": 2.0,
+  "max_position_pct": 2.0,
+  "regime_filter": true,
+  "quarantine_min_samples": 30,
+  "evidence_weights": {
+    "momentum": 1.0,
+    "trend": 1.0,
+    "structure": 1.0,
+    "volume": 1.0,
+    "regime": 1.0
+  },
+  "band_thresholds": {
+    "high": 0.75,
+    "medium": 0.5
+  },
+  "devils_advocate": "mandatory",
+  "output_contract": "Return exactly one JSON object. No markdown, no prose, no price targets, no trade instructions.",
+  "learning": {
+    "mode": "log_only",
+    "promote_requires": "N >= 30 quarantined samples, then versioned rules.json change under git, then a 3-month shadow curve",
+    "auto_learn": false
+  }
+}

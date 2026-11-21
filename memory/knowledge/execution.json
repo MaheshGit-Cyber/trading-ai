@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "updated": "2026-11-20",
+  "purpose": "Execution constraints that silently invalidate signals. These were absent from the course corpus (ban period: 0 mentions, adj_factor: 0 mentions).",
+  "fno_ban_period": {
+    "what": "A stock enters the F&O ban list when open interest crosses 95% of the Market-Wide Position Limit (MWPL).",
+    "effect": "No fresh derivative positions allowed. Existing positions may be squared off, not added to.",
+    "exit": "The ban lifts when open interest falls back below the threshold (commonly cited around 80% of MWPL). Verify the current circular.",
+    "penalty": "Trading fresh positions during the ban can attract a penalty of about 1% of the increased position value, with a minimum around Rs 5,000.",
+    "rule_for_signals": "If the underlying is in the F&O ban list, do NOT emit a derivative signal. Cash-equity signals are unaffected.",
+    "data_source": "NSE publishes fo_secban.csv daily. This must be ingested, not remembered."
+  },
+  "circuit_limits": {
+    "stock_level": {
+      "bands": ["2%", "5%", "10%", "20%"],
+      "rule": "A stock stuck at the upper circuit cannot be bought; at the lower circuit it cannot be sold.",
+      "implication": "A backtest that fills at the circuit price is wrong. The fill may not exist.",
+      "signal_rule": "No new signal if the stock hit a circuit limit in the last 3 sessions."
+    },
+    "index_level": {
+      "bands": ["10%", "15%", "20%"],
+      "rule": "Exchange-wide circuit breakers halt trading for 15 minutes, 30 minutes, or the rest of the day depending on the level and time of hit.",
+      "implication": "Intraday strategies must handle a market-wide halt as a hard risk event."
+    }
+  },
+  "corporate_actions": {
+    "adj_factor": {
+      "what": "A multiplier that restates historical prices onto today's share basis after splits, bonuses, and rights issues.",
+      "rule": "Always compute returns on adjusted prices. Never stitch unadjusted prices across an action.",
+      "why_absent_from_course": "The course corpus has zero mentions of adj_factor. This is the single largest source of fake data in Indian equity backtests.",
+      "verification": "Check that the adjusted series has no single-day return beyond +/-20% for a largecap unless it is a real event."
+    },
+    "dividends": {
+      "price_return_vs_total_return": "Price return excludes dividends. Total return includes them.",
+      "rule": "State which basis the backtest uses. Mixing them across strategies makes comparison meaningless.",
+      "note": "NSEDATA4ME does not apply dividends. Price return only unless you add them."
+    },
+    "ex_dates": {
+      "rule": "Do not open a new position on the ex-date expecting the pre-action price. The price adjusts at open."
+    }
+  },
+  "settlement": {
+    "equity": "T+1 -- securities and funds settle one business day after trade.",
+    "implication": "Capital is locked for one day in delivery trades. A daily rotation strategy cannot reuse the same capital every day.",
+    "fno": "Mark-to-market daily; final settlement on expiry."
+  },
+  "order_mechanics": {
+    "tick_size": "Rs 0.01 for most equity.",
+    "freeze_quantity": "Large orders must be sliced. NSE publishes per-symbol freeze limits; index F&O freeze limits were revised with effect from October 2026. Verify current values.",
+    "spread_rule": "Do not emit a signal when bid-ask spread exceeds 0.5% of price.",
+    "market_order_rule": "Never model a market order fill at the last traded price. Model it at the far side of the spread plus slippage."
+  },
+  "regulatory": {
+    "retail_algo_framework": {
+      "effective": "1 April 2026",
+      "requires": [
+        "Algo ID from the exchange",
+        "strategy registration through the broker",
+        "static IP whitelist",
+        "order rate limit around 10 orders per second"
+      ],
+      "applies_to": "Order-generating automation routed through a broker.",
+      "does_not_apply_to": "A signal-only system that never places an order. This project is signal-only, so the framework does not bind it today -- but it binds the moment execution is added."
+    },
+    "research_analyst_note": "Selling or distributing signals to others can bring you under Research Analyst regulation. Personal use and own capital is a different path. Get a lawyer before distributing anything."
+  }
+}
