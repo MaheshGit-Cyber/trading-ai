@@ -1,13 +1,35 @@
 {
-  "active": "groq_cloud",
+  "active": "nvidia_nim",
+  "council": {
+    "chief_officer": "nvidia_nim",
+    "technical_execution": "groq_cloud",
+    "devils_advocate": "google_gemini",
+    "fallback_offline": "local_offline"
+  },
   "providers": {
+    "nvidia_nim": {
+      "type": "openai_compat",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "auth": "env:NVIDIA_API_KEY",
+      "timeout_s": 90,
+      "notes": "550 Billion parameter Nemotron-3 Ultra flagship monster model on NVIDIA DGX Cloud. Supreme Chief Decision Maker."
+    },
     "groq_cloud": {
       "type": "openai_compat",
       "base_url": "https://api.groq.com/openai/v1",
       "model": "openai/gpt-oss-120b",
       "auth": "env:GROQ_API_KEY",
       "timeout_s": 30,
-      "notes": "120 Billion parameter flagship institutional reasoning model running on Groq LPU cloud with ultra-low latency (<1s response)."
+      "notes": "120 Billion parameter model on Groq LPU Cloud. Ultra-fast technical calculations & momentum specialist."
+    },
+    "google_gemini": {
+      "type": "openai_compat",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "model": "gemini-3.5-flash-lite",
+      "auth": "env:GEMINI_API_KEY",
+      "timeout_s": 30,
+      "notes": "Google Gemini 3.5 Flash-Lite with 1M context. Specialized Devil's Advocate & Risk Invalidation Hunter."
     },
     "local_offline": {
       "type": "openai_compat",
@@ -16,21 +38,13 @@
       "model_path": "/storage/emulated/0/Trading_AI/Ai_Model/DeepSeek-R1-Distill-Qwen-7B.Q4_K_M.gguf",
       "auth": "none",
       "timeout_s": 180,
-      "notes": "KCS Sovereign-R1 institutional quant model engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). Running locally via llama.cpp."
+      "notes": "KCS Sovereign-R1 institutional quant model running locally via llama.cpp."
     },
     "opencode_cli": {
       "type": "opencode_cli",
       "model": "opencode/deepseek-v4.1-flash-free#high",
       "timeout_s": 180,
       "notes": "CLI-based execution."
-    },
-    "nvidia_nim": {
-      "type": "openai_compat",
-      "base_url": "https://integrate.api.nvidia.com/v1",
-      "model": "nvidia/nemotron-3-ultra-550b-a55b",
-      "auth": "env:NVIDIA_API_KEY",
-      "timeout_s": 30,
-      "notes": "550 Billion parameter Nemotron-3 Ultra monster model running on NVIDIA DGX supercomputer cloud."
     }
   }
 }

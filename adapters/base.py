@@ -68,7 +68,7 @@ class OpenAICompat:
             raise ValueError(f"unknown auth mode: {self.auth}")
         return h
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, max_tokens: int = 1000) -> str:
         body = json.dumps({
             "model": self.model,
             "messages": [
@@ -76,6 +76,7 @@ class OpenAICompat:
                 {"role": "user", "content": user},
             ],
             "temperature": 0.2,
+            "max_tokens": max_tokens,
         }).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions",
@@ -95,7 +96,12 @@ class OpenAICompat:
             raise RuntimeError(f"transport failed for {self.base_url}: {e}") from e
 
         try:
-            return data["choices"][0]["message"]["content"] or ""
+            msg = data["choices"][0]["message"]
+            content = msg.get("content") or ""
+            reasoning = msg.get("reasoning_content") or msg.get("reasoning") or ""
+            if content and reasoning:
+                return f"{content}\n\n[Deep Reasoning]:\n{reasoning}"
+            return content or reasoning or ""
         except (KeyError, IndexError, TypeError) as e:
             raise RuntimeError(f"unexpected response shape: {json.dumps(data)[:300]}") from e
 
