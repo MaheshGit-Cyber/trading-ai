@@ -46,9 +46,21 @@ class OpenAICompat:
         elif self.auth.startswith("bearer:"):
             h["Authorization"] = f"Bearer {self.auth[7:]}"
         elif self.auth.startswith("env:"):
-            key = os.environ.get(self.auth[4:], "")
+            env_name = self.auth[4:]
+            key = os.environ.get(env_name, "")
             if not key:
-                raise RuntimeError(f"env var {self.auth[4:]} is not set")
+                # Try loading from local .env file
+                env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+                if os.path.exists(env_path):
+                    with open(env_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith(f"{env_name}="):
+                                key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                                os.environ[env_name] = key
+                                break
+            if not key:
+                raise RuntimeError(f"env var {env_name} is not set")
             h["Authorization"] = f"Bearer {key}"
         elif self.auth == "none":
             pass
