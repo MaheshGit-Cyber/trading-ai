@@ -26,6 +26,7 @@ from typing import Any, Dict
 sys.path.insert(0, "/storage/emulated/0/Trading_AI/trading-ai")
 from adapters.base import get_adapter
 from brain.master_brain import get_master_brain
+from engine.market_grounding_hub import get_grounding_hub
 
 CONFIG_PATH = "/storage/emulated/0/Trading_AI/trading-ai/config/models.json"
 
@@ -39,6 +40,7 @@ class MultiAgentCouncil:
             self.cfg = json.load(f)
 
         self.master_brain = get_master_brain()
+        self.grounding_hub = get_grounding_hub()
 
         # Initialize the 5 specialized adapters
         self.chief_adapter = get_adapter(self.cfg, "nvidia_550b_chief")       # 550B Chief
@@ -88,11 +90,16 @@ class MultiAgentCouncil:
         user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
         return self.macro_adapter.complete(system, user, max_tokens=400)
 
-    def convene_council(self, asset_class: str, market_state: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute parallel deliberation across the 4 specialist agents, then synthesize via 550B Chief."""
+    def convene_council(self, asset_class: str = "crypto_assets", market_state: Dict[str, Any] | None = None) -> Dict[str, Any]:
+        """Execute parallel deliberation across the 4 specialist agents, grounded with live chart & news tools."""
         t_start = time.time()
-        symbol = market_state.get("symbol", "UNKNOWN")
-        live_price = market_state.get("live_price_usd", 0.0)
+        symbol = (market_state or {}).get("symbol", "BTC/USDT")
+        
+        # Ground with Real-Time Chart Telemetry, Live News, and 16-Year Database
+        if not market_state or "verified_truth_anchors" not in market_state:
+            market_state = self.grounding_hub.get_grounded_market_intelligence(symbol)
+
+        live_price = market_state.get("verified_truth_anchors", {}).get("live_price_usd", 0.0)
 
         # -------------------------------------------------------------
         # Phase 1: PARALLEL EXECUTION OF THE 4 SPECIALIST AGENTS
