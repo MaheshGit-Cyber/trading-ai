@@ -1,35 +1,28 @@
 {
-  "active": "opencode_cli",
+  "active": "groq_cloud",
   "providers": {
-    "opencode_cli": {
-      "type": "opencode_cli",
-      "model": "opencode/deepseek-v4.1-flash-free#high",
-      "timeout_s": 180,
-      "notes": "Shells out to `opencode run --standalone --format json` from a CLEAN cwd (no AGENTS.md, no skills) with PWD set to that cwd. --standalone is required because the shared background service owns its project config. PWD is required because subprocess(cwd=...) does not update it and OpenCode uses PWD for config discovery. Missing either surfaces as `Agent not found: \"plain\"`. `#high` is the active reasoning-effort variant: enough for the evidence layer without draining the free bucket or risking the 180s timeout. `#max` is for hard one-off analysis; `#low` is for bulk/simple calls. Without the clean cwd the agent loads skills and enters tool loops, burning quota -- observed as 90s timeouts then FreeUsageLimitError. Clean cwd measured at 17s for an 8-question batch."
-    },
-    "opencode_http": {
+    "groq_cloud": {
       "type": "openai_compat",
-      "base_url": "https://opencode.ai/inference/openai/v1",
-      "model": "deepseek-v4.1-flash-free",
-      "auth": "bearer_public",
-      "timeout_s": 40,
-      "notes": "Free gateway, no login required. Direct HTTP from a non-OpenCode client is not a supported path for free-tier chat models (Console docs: 'Free-tier chat models require OpenCode'). Expect 429 FreeUsageLimitError; the CLI is the supported path. Kept as an adapter for paid models or when a key is added."
+      "base_url": "https://api.groq.com/openai/v1",
+      "model": "openai/gpt-oss-120b",
+      "auth": "env:GROQ_API_KEY",
+      "timeout_s": 30,
+      "notes": "120 Billion parameter flagship institutional reasoning model running on Groq LPU cloud with ultra-low latency (<1s response)."
     },
     "local_offline": {
       "type": "openai_compat",
       "base_url": "http://127.0.0.1:8080/v1",
-      "model": "qwen3-1.7b-q4",
+      "model": "KCS-Sovereign-R1-7B-Q4",
+      "model_path": "/storage/emulated/0/Trading_AI/Ai_Model/DeepSeek-R1-Distill-Qwen-7B.Q4_K_M.gguf",
       "auth": "none",
       "timeout_s": 180,
-      "notes": "llama.cpp server (Termux, no root, no internet). Phone has ~3GB free RAM -> 3B params max at Q4. Set 'active' to this to go fully offline. Quality is LOWER than the free gateway."
+      "notes": "KCS Sovereign-R1 institutional quant model engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). Running locally via llama.cpp."
     },
-    "paid_api": {
-      "type": "openai_compat",
-      "base_url": "",
-      "model": "",
-      "auth": "env:OPENAI_API_KEY",
-      "timeout_s": 60,
-      "notes": "Fill in base_url + model when you subscribe. 'auth' reads the named env var. Nothing else in the codebase changes."
+    "opencode_cli": {
+      "type": "opencode_cli",
+      "model": "opencode/deepseek-v4.1-flash-free#high",
+      "timeout_s": 180,
+      "notes": "CLI-based execution."
     }
   }
 }

@@ -37,9 +37,14 @@ class OpenAICompat:
             raise ValueError("provider.base_url is empty -- fill it in config/models.json")
 
     def _headers(self) -> dict:
-        h = {"Content-Type": "application/json", "User-Agent": "trading-ai/0.1"}
+        h = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
         if self.auth == "bearer_public":
             h["Authorization"] = "Bearer public"
+        elif self.auth.startswith("bearer:"):
+            h["Authorization"] = f"Bearer {self.auth[7:]}"
         elif self.auth.startswith("env:"):
             key = os.environ.get(self.auth[4:], "")
             if not key:
