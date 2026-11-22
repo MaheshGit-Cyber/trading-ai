@@ -1,11 +1,11 @@
 {
   "active": "nvidia_550b_chief",
   "council": {
-    "chief_officer": "nvidia_550b_chief",
-    "math_specialist": "nvidia_30b_math",
-    "technical_execution": "groq_120b_tech",
-    "devils_advocate": "gemini_devils_advocate",
-    "macro_context": "nvidia_macro_lightning"
+    "tier_1_math": "nvidia_30b_math",
+    "tier_2_momentum": "nvidia_30b_lightning",
+    "tier_3_macro": "nvidia_1t_mistral",
+    "tier_4_risk_super_vl": "nvidia_120b_super_vl",
+    "tier_5_supreme_chief": "nvidia_550b_chief"
   },
   "providers": {
     "nvidia_550b_chief": {
@@ -21,32 +21,48 @@
       "base_url": "https://integrate.api.nvidia.com/v1",
       "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "auth": "env:NVIDIA_API_KEY",
-      "timeout_s": 30,
+      "timeout_s": 45,
       "notes": "30 Billion parameter dedicated reasoning model. Specializes in Options Greeks, Taylor-series calculus, and exact mathematical payoff."
     },
-    "groq_120b_tech": {
-      "type": "openai_compat",
-      "base_url": "https://api.groq.com/openai/v1",
-      "model": "openai/gpt-oss-120b",
-      "auth": "env:GROQ_API_KEY",
-      "timeout_s": 30,
-      "notes": "120 Billion parameter model on Groq LPU Cloud. Ultra-fast technical momentum and indicator calculations (<1s)."
-    },
-    "gemini_devils_advocate": {
-      "type": "openai_compat",
-      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-      "model": "gemini-3.5-flash-lite",
-      "auth": "env:GEMINI_API_KEY",
-      "timeout_s": 30,
-      "notes": "Google Gemini 3.5 Flash-Lite with 1M context. Specialized Devil's Advocate & Risk Invalidation Hunter."
-    },
-    "nvidia_macro_lightning": {
+    "nvidia_30b_lightning": {
       "type": "openai_compat",
       "base_url": "https://integrate.api.nvidia.com/v1",
       "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
       "auth": "env:NVIDIA_API_KEY",
       "timeout_s": 30,
-      "notes": "30 Billion parameter Nemotron-3.5 Lightning model. Ultra-fast sub-second (0.7s) macro regime and multi-timeframe structural alignment."
+      "notes": "30 Billion parameter Nemotron-3.5 Lightning model. Ultra-fast sub-second (0.5s) technical momentum and indicator execution."
+    },
+    "nvidia_1t_mistral": {
+      "type": "openai_compat",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "mistralai/mistral-large-4-1t-a52b",
+      "auth": "env:NVIDIA_API_KEY",
+      "timeout_s": 60,
+      "notes": "1 Trillion parameter MoE flagship on NVIDIA Cloud. Macro context, policy minutes, and multi-asset regime alignment."
+    },
+    "nvidia_120b_super_vl": {
+      "type": "openai_compat",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "auth": "env:NVIDIA_API_KEY",
+      "timeout_s": 45,
+      "notes": "120 Billion parameter Super-VL engine. Devil's advocate risk hunter, false-breakout detection, and liquidity trap invalidation."
+    },
+    "groq_120b_backup": {
+      "type": "openai_compat",
+      "base_url": "https://api.groq.com/openai/v1",
+      "model": "openai/gpt-oss-120b",
+      "auth": "env:GROQ_API_KEY",
+      "timeout_s": 30,
+      "notes": "Backup provider: 120 Billion parameter model on Groq LPU Cloud."
+    },
+    "gemini_backup": {
+      "type": "openai_compat",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "model": "gemini-3.5-flash-lite",
+      "auth": "env:GEMINI_API_KEY",
+      "timeout_s": 30,
+      "notes": "Backup provider: Google Gemini 3.5 Flash-Lite."
     },
     "local_offline": {
       "type": "openai_compat",

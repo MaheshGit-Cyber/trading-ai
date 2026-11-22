@@ -2,15 +2,15 @@
 Founder & Lead Architect: Kandakatla Mahesh
 Firm: Kandakatla Capital Systems (KCS)
 
-This module implements a 5-tier institutional council where 4 specialized
-AI agents run IN PARALLEL via ThreadPoolExecutor (<4s latency), followed by
-the Supreme Chief Decision Maker (NVIDIA 550B Ultra) who enforces the 3/5
-majority vote and non-negotiable Risk Veto:
+This module implements the 5-tier institutional council where 4 specialized
+AI agents run IN PARALLEL on NVIDIA DGX Cloud, followed by the Supreme Chief
+Decision Maker (NVIDIA 550B Nemotron-3 Ultra) who enforces the 3/5 majority vote
+and non-negotiable Risk Veto:
 
 Tier 1: Agent 1 (Math & Greeks Specialist) -> NVIDIA 30B Reasoning Engine
-Tier 2: Agent 2 (Technical Momentum Specialist) -> Groq 120B Engine
-Tier 3: Agent 3 (Devil's Advocate Risk Hunter) -> Google Gemini 3.5 Flash-Lite
-Tier 4: Agent 4 (Macro & Regime Alignment) -> Moonshot Kimi K3.1 Pro / Gemma
+Tier 2: Agent 2 (Technical Momentum Specialist) -> NVIDIA 30B Lightning Engine
+Tier 3: Agent 3 (Devil's Advocate Risk Hunter) -> NVIDIA 120B Super-VL Engine
+Tier 4: Agent 4 (Macro & Regime Alignment) -> Mistral Large 1 Trillion (1T) MoE
 Tier 5: Supreme Chief Officer -> NVIDIA 550B Nemotron-3 Ultra (Final Binding Verdict)
 """
 
@@ -42,12 +42,12 @@ class MultiAgentCouncil:
         self.master_brain = get_master_brain()
         self.grounding_hub = get_grounding_hub()
 
-        # Initialize the 5 specialized adapters
+        # Initialize the 5 specialized NVIDIA models
         self.chief_adapter = get_adapter(self.cfg, "nvidia_550b_chief")       # 550B Chief
         self.math_adapter = get_adapter(self.cfg, "nvidia_30b_math")          # 30B Math & Greeks
-        self.tech_adapter = get_adapter(self.cfg, "groq_120b_tech")           # 120B Momentum
-        self.devils_adapter = get_adapter(self.cfg, "gemini_devils_advocate") # Gemini Devil
-        self.macro_adapter = get_adapter(self.cfg, "nvidia_macro_lightning")  # 30B Lightning Macro (0.7s)
+        self.tech_adapter = get_adapter(self.cfg, "nvidia_30b_lightning")     # 30B Lightning Momentum
+        self.devils_adapter = get_adapter(self.cfg, "nvidia_120b_super_vl")   # 120B Super-VL Risk
+        self.macro_adapter = get_adapter(self.cfg, "nvidia_1t_mistral")       # 1T MoE Macro
 
     def _run_math_agent(self, market_state: Dict[str, Any]) -> str:
         system = (
@@ -57,7 +57,7 @@ class MultiAgentCouncil:
             "and calculate net expected return after 0.05% slippage/fees."
         )
         user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
-        return self.math_adapter.complete(system, user, max_tokens=400)
+        return self.math_adapter.complete(system, user, max_tokens=500)
 
     def _run_tech_agent(self, market_state: Dict[str, Any]) -> str:
         system = (
@@ -67,7 +67,7 @@ class MultiAgentCouncil:
             "Propose strict Entry Zone, Stop-Loss, Target 1, Target 2, and R:R ratio."
         )
         user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
-        return self.tech_adapter.complete(system, user, max_tokens=400)
+        return self.tech_adapter.complete(system, user, max_tokens=500)
 
     def _run_devils_agent(self, market_state: Dict[str, Any]) -> str:
         system = (
@@ -78,7 +78,7 @@ class MultiAgentCouncil:
             "State your Risk Score (1-10) and whether to PROCEED, TIGHTEN_STOP, or VETO_TO_CASH_SHIELD."
         )
         user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
-        return self.devils_adapter.complete(system, user, max_tokens=400)
+        return self.devils_adapter.complete(system, user, max_tokens=500)
 
     def _run_macro_agent(self, market_state: Dict[str, Any]) -> str:
         system = (
@@ -88,7 +88,7 @@ class MultiAgentCouncil:
             "and determine if current market regime is Trending Bullish, Trending Bearish, or Choppy Range."
         )
         user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
-        return self.macro_adapter.complete(system, user, max_tokens=400)
+        return self.macro_adapter.complete(system, user, max_tokens=500)
 
     def convene_council(self, asset_class: str = "crypto_assets", market_state: Dict[str, Any] | None = None) -> Dict[str, Any]:
         """Execute parallel deliberation across the 4 specialist agents, grounded with live chart & news tools."""
@@ -124,9 +124,9 @@ class MultiAgentCouncil:
         chief_user = (
             f"COUNCIL OF 5 INSTITUTIONAL DELIBERATION FOR {symbol} (Live Price: ${live_price:,.2f}):\n\n"
             f"=== [AGENT 1: 30B QUANTITATIVE MATH & PAYOFF] ===\n{math_rep}\n\n"
-            f"=== [AGENT 2: 120B TECHNICAL MOMENTUM & LEVELS] ===\n{tech_rep}\n\n"
-            f"=== [AGENT 3: DEVIL'S ADVOCATE RISK HUNTER] ===\n{devils_rep}\n\n"
-            f"=== [AGENT 4: MACRO & MULTI-TIMEFRAME REGIME] ===\n{macro_rep}\n\n"
+            f"=== [AGENT 2: 30B LIGHTNING TECHNICAL MOMENTUM] ===\n{tech_rep}\n\n"
+            f"=== [AGENT 3: 120B SUPER-VL RISK & INVALIDATION] ===\n{devils_rep}\n\n"
+            f"=== [AGENT 4: 1T MISTRAL MACRO & REGIME ALIGNMENT] ===\n{macro_rep}\n\n"
             f"=== [SUPREME EXECUTIVE MANDATE] ===\n"
             f"You are the Supreme Chief Decision Maker of KCS Sovereign-R1 under Founder Kandakatla Mahesh.\n"
             f"Apply the Weighted Consensus Protocol (Supermajority 3/5 Rule + Risk Veto):\n"
@@ -149,9 +149,9 @@ class MultiAgentCouncil:
             "parallel_phase_seconds": round(t_parallel, 2),
             "chief_phase_seconds": round(t_chief, 2),
             "agent_1_math_30b": math_rep,
-            "agent_2_tech_120b": tech_rep,
-            "agent_3_devils_advocate": devils_rep,
-            "agent_4_macro_regime": macro_rep,
+            "agent_2_tech_lightning": tech_rep,
+            "agent_3_risk_120b": devils_rep,
+            "agent_4_macro_1t": macro_rep,
             "agent_5_supreme_chief_550b": chief_verdict
         }
 
@@ -162,9 +162,10 @@ def get_council() -> MultiAgentCouncil:
 
 if __name__ == "__main__":
     council = get_council()
-    print("[+] KCS Sovereign-R1 5-Tier Parallel Council Initialized!")
-    print(f"[+] Chief: {council.cfg['council']['chief_officer']} (550B)")
-    print(f"[+] Math: {council.cfg['council']['math_specialist']} (30B)")
-    print(f"[+] Tech: {council.cfg['council']['technical_execution']} (120B)")
-    print(f"[+] Devil: {council.cfg['council']['devils_advocate']} (Gemini 3.5 Flash)")
-    print(f"[+] Macro: {council.cfg['council']['macro_context']} (Kimi Macro)")
+    print("[+] KCS Sovereign-R1 Pure Top-5 NVIDIA Council Initialized!")
+    print(f"[+] Chief: {council.cfg['council']['tier_5_supreme_chief']} (550B Ultra)")
+    print(f"[+] Math: {council.cfg['council']['tier_1_math']} (30B Math)")
+    print(f"[+] Tech: {council.cfg['council']['tier_2_momentum']} (30B Lightning)")
+    print(f"[+] Risk: {council.cfg['council']['tier_4_risk_super_vl']} (120B Super-VL)")
+    print(f"[+] Macro: {council.cfg['council']['tier_3_macro']} (1T Mistral)")
+
