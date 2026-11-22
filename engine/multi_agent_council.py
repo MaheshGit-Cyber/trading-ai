@@ -1,16 +1,22 @@
-"""KCS Sovereign-R1 — Multi-Agent Institutional Council Engine
+"""KCS Sovereign-R1 — 5-Tier Parallel Institutional Multi-Agent Council
 Founder & Lead Architect: Kandakatla Mahesh
 Firm: Kandakatla Capital Systems (KCS)
 
-This module orchestrates a 3-tier ensemble of specialized AI models to evaluate
-market opportunities collaboratively with zero single-model bias:
-- Agent 1 (Execution & Momentum): Groq 120B Flagship Model
-- Agent 2 (Devil's Advocate & Invalidation): Google Gemini 3.5 Flash-Lite
-- Agent 3 (Supreme Chief Decision Maker): NVIDIA 550B Nemotron-3 Ultra
+This module implements a 5-tier institutional council where 4 specialized
+AI agents run IN PARALLEL via ThreadPoolExecutor (<4s latency), followed by
+the Supreme Chief Decision Maker (NVIDIA 550B Ultra) who enforces the 3/5
+majority vote and non-negotiable Risk Veto:
+
+Tier 1: Agent 1 (Math & Greeks Specialist) -> NVIDIA 30B Reasoning Engine
+Tier 2: Agent 2 (Technical Momentum Specialist) -> Groq 120B Engine
+Tier 3: Agent 3 (Devil's Advocate Risk Hunter) -> Google Gemini 3.5 Flash-Lite
+Tier 4: Agent 4 (Macro & Regime Alignment) -> Moonshot Kimi K3.1 Pro / Gemma
+Tier 5: Supreme Chief Officer -> NVIDIA 550B Nemotron-3 Ultra (Final Binding Verdict)
 """
 
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import os
 import sys
@@ -25,7 +31,7 @@ CONFIG_PATH = "/storage/emulated/0/Trading_AI/trading-ai/config/models.json"
 
 
 class MultiAgentCouncil:
-    """Multi-Agent Institutional Decision Council for KCS Sovereign-R1."""
+    """5-Tier Parallel Institutional Decision Council for KCS Sovereign-R1."""
 
     def __init__(self, config_path: str = CONFIG_PATH):
         self.config_path = config_path
@@ -33,78 +39,99 @@ class MultiAgentCouncil:
             self.cfg = json.load(f)
 
         self.master_brain = get_master_brain()
-        
-        # Initialize specialized adapters
-        self.chief_adapter = get_adapter(self.cfg, "nvidia_nim")       # 550B
-        self.tech_adapter = get_adapter(self.cfg, "groq_cloud")         # 120B
-        self.devils_adapter = get_adapter(self.cfg, "google_gemini")    # Gemini 3.5 Flash
+
+        # Initialize the 5 specialized adapters
+        self.chief_adapter = get_adapter(self.cfg, "nvidia_550b_chief")       # 550B Chief
+        self.math_adapter = get_adapter(self.cfg, "nvidia_30b_math")          # 30B Math & Greeks
+        self.tech_adapter = get_adapter(self.cfg, "groq_120b_tech")           # 120B Momentum
+        self.devils_adapter = get_adapter(self.cfg, "gemini_devils_advocate") # Gemini Devil
+        self.macro_adapter = get_adapter(self.cfg, "nvidia_macro_lightning")  # 30B Lightning Macro (0.7s)
+
+    def _run_math_agent(self, market_state: Dict[str, Any]) -> str:
+        system = (
+            "You are Agent 1 (Quantitative Mathematics & Options Greeks Specialist) of KCS Sovereign-R1, "
+            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). "
+            "Evaluate volatility (ATR), expected payoff, position sizing for 1% portfolio risk, "
+            "and calculate net expected return after 0.05% slippage/fees."
+        )
+        user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
+        return self.math_adapter.complete(system, user, max_tokens=400)
+
+    def _run_tech_agent(self, market_state: Dict[str, Any]) -> str:
+        system = (
+            "You are Agent 2 (Technical Momentum & Execution Specialist) of KCS Sovereign-R1, "
+            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). "
+            "Evaluate price vs 20-DMA / 200-DMA, RSI-14, volume divergence, and support/resistance zones. "
+            "Propose strict Entry Zone, Stop-Loss, Target 1, Target 2, and R:R ratio."
+        )
+        user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
+        return self.tech_adapter.complete(system, user, max_tokens=400)
+
+    def _run_devils_agent(self, market_state: Dict[str, Any]) -> str:
+        system = (
+            "You are Agent 3 (Devil's Advocate & Risk Invalidation Hunter) of KCS Sovereign-R1, "
+            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). "
+            "Your sole objective is to aggressively challenge the market state. "
+            "Identify liquidity traps, false breakouts, impending macro shocks, and funding squeezes. "
+            "State your Risk Score (1-10) and whether to PROCEED, TIGHTEN_STOP, or VETO_TO_CASH_SHIELD."
+        )
+        user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
+        return self.devils_adapter.complete(system, user, max_tokens=400)
+
+    def _run_macro_agent(self, market_state: Dict[str, Any]) -> str:
+        system = (
+            "You are Agent 4 (Macro Context & Multi-Timeframe Alignment Specialist) of KCS Sovereign-R1, "
+            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems (KCS). "
+            "Evaluate higher timeframe structural bias (Daily / 4h), broader market correlation (BTC dominance / DXY), "
+            "and determine if current market regime is Trending Bullish, Trending Bearish, or Choppy Range."
+        )
+        user = f"Market State for {market_state.get('symbol')}:\n{json.dumps(market_state, indent=2)}"
+        return self.macro_adapter.complete(system, user, max_tokens=400)
 
     def convene_council(self, asset_class: str, market_state: Dict[str, Any]) -> Dict[str, Any]:
-        """Convene the Council of AI models to deliberate on live market data."""
+        """Execute parallel deliberation across the 4 specialist agents, then synthesize via 550B Chief."""
         t_start = time.time()
         symbol = market_state.get("symbol", "UNKNOWN")
         live_price = market_state.get("live_price_usd", 0.0)
 
         # -------------------------------------------------------------
-        # Phase 1: Technical & Momentum Execution Agent (Groq 120B)
+        # Phase 1: PARALLEL EXECUTION OF THE 4 SPECIALIST AGENTS
         # -------------------------------------------------------------
-        tech_system = (
-            "You are Agent 1 (Technical & Momentum Execution Specialist) of KCS Sovereign-R1, "
-            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems. "
-            "Your job is to analyze price action, moving averages, RSI, ATR, and generate an exact "
-            "technical setup with Entry, Stop-Loss, Target 1, Target 2, and R:R ratio."
-        )
-        tech_user = (
-            f"Analyze technical setup for {symbol}:\n"
-            f"{json.dumps(market_state, indent=2)}\n"
-            f"Provide: Proposed Direction (LONG/SHORT/NEUTRAL), Entry Zone, Stop-Loss, Target 1, Target 2, R:R."
-        )
-        t0 = time.time()
-        tech_assessment = self.tech_adapter.complete(tech_system, tech_user)
-        t_tech = time.time() - t0
+        t_parallel_start = time.time()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            future_math = executor.submit(self._run_math_agent, market_state)
+            future_tech = executor.submit(self._run_tech_agent, market_state)
+            future_devils = executor.submit(self._run_devils_agent, market_state)
+            future_macro = executor.submit(self._run_macro_agent, market_state)
+
+            math_rep = future_math.result()
+            tech_rep = future_tech.result()
+            devils_rep = future_devils.result()
+            macro_rep = future_macro.result()
+        t_parallel = time.time() - t_parallel_start
 
         # -------------------------------------------------------------
-        # Phase 2: Devil's Advocate & Risk Invalidation (Gemini 3.5 Flash)
-        # -------------------------------------------------------------
-        devils_system = (
-            "You are Agent 2 (Devil's Advocate & Risk Invalidation Hunter) of KCS Sovereign-R1, "
-            "engineered by Kandakatla Mahesh for Kandakatla Capital Systems. "
-            "Your sole objective is to aggressively challenge the proposed technical trade. "
-            "Search for liquidity traps, false breakouts, macro headwinds, and structural failure modes. "
-            "Give a Risk Rating (1-10) and state whether to PROCEED, TIGHTEN_STOP, or VETO (CASH_SHIELD)."
-        )
-        devils_user = (
-            f"Review this market state and Agent 1's proposed setup for {symbol}:\n\n"
-            f"MARKET STATE:\n{json.dumps(market_state, indent=2)}\n\n"
-            f"AGENT 1 (120B TECH) PROPOSAL:\n{tech_assessment}\n\n"
-            f"Hunt for weaknesses and output your Devil's Advocate critique and Veto/Proceed recommendation."
-        )
-        t0 = time.time()
-        devils_critique = self.devils_adapter.complete(devils_system, devils_user)
-        t_devils = time.time() - t0
-
-        # -------------------------------------------------------------
-        # Phase 3: Supreme Chief Decision Maker (NVIDIA 550B Nemotron-3 Ultra)
+        # Phase 2: SUPREME CHIEF DECISION MAKER (NVIDIA 550B NEMOTRON ULTRA)
         # -------------------------------------------------------------
         chief_system = self.master_brain.generate_cortex_system_prompt(asset_class)
         chief_user = (
-            f"COUNCIL DELIBERATION FOR {symbol} (Live Price: ${live_price:,.2f}):\n\n"
-            f"--- [AGENT 1: 120B TECHNICAL EXECUTION] ---\n"
-            f"{tech_assessment}\n\n"
-            f"--- [AGENT 2: DEVIL'S ADVOCATE CRITIQUE] ---\n"
-            f"{devils_critique}\n\n"
-            f"--- [SUPREME MANDATE] ---\n"
-            f"As Supreme Chief of KCS Sovereign-R1 under Kandakatla Mahesh:\n"
-            f"Synthesize both agents' arguments against Master Brain Directives.\n"
-            f"Emit the FINAL INSTITUTIONAL VERDICT:\n"
-            f"1. Final Council Decision (APPROVED / REJECTED_TO_CASH_SHIELD)\n"
-            f"2. Strict Final Execution Order (Entry, Final SL, Final Targets, Net R:R)\n"
-            f"3. Capital Allocation (% of Equity)\n"
-            f"4. Council Consensus Summary"
+            f"COUNCIL OF 5 INSTITUTIONAL DELIBERATION FOR {symbol} (Live Price: ${live_price:,.2f}):\n\n"
+            f"=== [AGENT 1: 30B QUANTITATIVE MATH & PAYOFF] ===\n{math_rep}\n\n"
+            f"=== [AGENT 2: 120B TECHNICAL MOMENTUM & LEVELS] ===\n{tech_rep}\n\n"
+            f"=== [AGENT 3: DEVIL'S ADVOCATE RISK HUNTER] ===\n{devils_rep}\n\n"
+            f"=== [AGENT 4: MACRO & MULTI-TIMEFRAME REGIME] ===\n{macro_rep}\n\n"
+            f"=== [SUPREME EXECUTIVE MANDATE] ===\n"
+            f"You are the Supreme Chief Decision Maker of KCS Sovereign-R1 under Founder Kandakatla Mahesh.\n"
+            f"Apply the Weighted Consensus Protocol (Supermajority 3/5 Rule + Risk Veto):\n"
+            f"1. Council Vote Tally (How many agents approve vs reject)\n"
+            f"2. Final Council Decision (APPROVED_FOR_EXECUTION / REJECTED_TO_CASH_SHIELD)\n"
+            f"3. Strict Execution Parameters (Entry Zone, Stop-Loss, Target 1, Target 2, Net R:R)\n"
+            f"4. Exact Position Size & Capital Allocation (% of Equity, max 1.0% risk)\n"
+            f"5. Devil's Advocate Failure Condition (Exact point that invalidates the trade)"
         )
-        t0 = time.time()
-        chief_verdict = self.chief_adapter.complete(chief_system, chief_user)
-        t_chief = time.time() - t0
+        t_chief_start = time.time()
+        chief_verdict = self.chief_adapter.complete(chief_system, chief_user, max_tokens=800)
+        t_chief = time.time() - t_chief_start
 
         t_total = time.time() - t_start
 
@@ -112,14 +139,13 @@ class MultiAgentCouncil:
             "symbol": symbol,
             "live_price": live_price,
             "total_latency_seconds": round(t_total, 2),
-            "council_latencies": {
-                "agent_1_groq_120b": round(t_tech, 2),
-                "agent_2_gemini_35": round(t_devils, 2),
-                "agent_3_nvidia_550b": round(t_chief, 2)
-            },
-            "agent_1_technical_120b": tech_assessment,
-            "agent_2_devils_advocate": devils_critique,
-            "agent_3_supreme_verdict_550b": chief_verdict
+            "parallel_phase_seconds": round(t_parallel, 2),
+            "chief_phase_seconds": round(t_chief, 2),
+            "agent_1_math_30b": math_rep,
+            "agent_2_tech_120b": tech_rep,
+            "agent_3_devils_advocate": devils_rep,
+            "agent_4_macro_regime": macro_rep,
+            "agent_5_supreme_chief_550b": chief_verdict
         }
 
 
@@ -129,7 +155,9 @@ def get_council() -> MultiAgentCouncil:
 
 if __name__ == "__main__":
     council = get_council()
-    print("[+] KCS Sovereign-R1 Multi-Agent Council Initialized!")
+    print("[+] KCS Sovereign-R1 5-Tier Parallel Council Initialized!")
     print(f"[+] Chief: {council.cfg['council']['chief_officer']} (550B)")
+    print(f"[+] Math: {council.cfg['council']['math_specialist']} (30B)")
     print(f"[+] Tech: {council.cfg['council']['technical_execution']} (120B)")
     print(f"[+] Devil: {council.cfg['council']['devils_advocate']} (Gemini 3.5 Flash)")
+    print(f"[+] Macro: {council.cfg['council']['macro_context']} (Kimi Macro)")
