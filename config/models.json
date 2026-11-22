@@ -23,6 +23,14 @@
       "model": "opencode/deepseek-v4.1-flash-free#high",
       "timeout_s": 180,
       "notes": "CLI-based execution."
+    },
+    "nvidia_nim": {
+      "type": "openai_compat",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "auth": "env:NVIDIA_API_KEY",
+      "timeout_s": 30,
+      "notes": "550 Billion parameter Nemotron-3 Ultra monster model running on NVIDIA DGX supercomputer cloud."
     }
   }
 }
