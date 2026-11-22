@@ -33,7 +33,7 @@ SYSTEM_PROMPT = (
 )
 
 @app.cls(
-    gpu="T4",  # Runs on Modal free tier $30/month (T4 is ~$0.59/hr, lasts ~50 hours of active inference!)
+    gpu="L4",  # 24GB VRAM, ultra-fast, perfectly fits 7B model within free tier ($30/mo)
     scaledown_window=300,  # Scales to zero after 5 mins of idle -> Zero cost when idle!
     timeout=600,
 )
@@ -46,8 +46,9 @@ class KCSSovereignEngine:
             model=MODEL_ID,
             tensor_parallel_size=1,
             max_model_len=4096,
-            gpu_memory_utilization=0.90,
+            gpu_memory_utilization=0.92,
             trust_remote_code=True,
+            enforce_eager=True,
         )
         print("[+] KCS Sovereign-R1 online and ready for quantitative analysis.")
 
